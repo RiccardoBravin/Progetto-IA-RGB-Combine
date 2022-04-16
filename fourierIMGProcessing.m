@@ -6,8 +6,10 @@
 %        |->   .
 %        |-> NCSU-CUB_Foram_Images_Others    
 
+clear
+
 path = {'G. Bulloides','G. Ruber','G. Sacculifer','N. Dutertrei','N. Incompta','N. Pachyderma','Others'};
-outF = 'percentileIMG';
+outF = 'fourierIMG';
 
 %create output folder
 mkdir(outF);
@@ -31,15 +33,15 @@ for K = 1 : length(path)
         px = zeros(imgR,imgC,16);
         %this loop goes through 16 images at a time and stores the value of
         %each pixel in a 3D matrix 
+        
         for J = 1 : 16
             img = readimage(imB,I);
-            for R = 1 : imgR
-               for C = 1 : imgC
-                   px(R,C,J) = img(R,C);
-               end
-            end
+            px(:,:,J) = img;
             I = I + 1;
         end
+    
+         
+
 
         img90 = zeros(imgR,imgC);
         img50 = zeros(imgR,imgC);
@@ -49,23 +51,28 @@ for K = 1 : length(path)
         %of 16 pixel gathered in the previous step
         for R = 1 : imgR
             for C = 1 : imgC
-                pix = px(R,C,:);
-                sort(pix); %prctile() is too slow, the nearest rank method gives us much better performance
-                img90(R,C) = pix(15);
-                img50(R,C) = pix(8);
-                img10(R,C) = pix(2);
+                for hmm = 1:16
+                    pix(hmm) = px(R,C,hmm)
+                end
+                plot([1:16],pix);
             end
         end
+
+
         %since we still have greyscale images we need to use uint8 format
         %for pixels values
-        img90 = uint8(img90);
-        img50 = uint8(img50);
-        img10 = uint8(img10);
+        img90 = uint8(ifft2(img90));
+        img50 = uint8(ifft2(img50));
+        img10 = uint8(ifft2(img10));
         
         %every matrix obtained this way is used as a channel in the RGB image
         %and is than saved in the new folder
         imgO = cat(3,img10,img50,img90);
         nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
         imwrite(imgO,nome);
+
+        
+        %montage({img90,img50,img10,imgO})
+
     end
 end    

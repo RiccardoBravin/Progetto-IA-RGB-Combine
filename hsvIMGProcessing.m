@@ -8,7 +8,8 @@
 
 clear
 
-path = {'G. Bulloides','G. Ruber','G. Sacculifer','N. Dutertrei','N. Incompta','N. Pachyderma','Others'};
+%path = {'G. Bulloides','G. Ruber','G. Sacculifer','N. Dutertrei','N. Incompta','N. Pachyderma','Others'};
+path = {'Others'};
 outF = 'hsvIMG';
 
 %create output folder
@@ -36,6 +37,8 @@ for K = 1 : length(path)
 
         for J = 1 : 16
             img = im2double(adapthisteq(readimage(imB,I)));
+            %imshow(img);
+
             hsv(:,:,:,J) = (cat(3,zeros(imgR,imgC),ones(imgR,imgC),img));
             hsv(:,:,1,J) = hsv(:,:,1,J) + (16/255*(J-1));
             I = I + 1;
@@ -49,7 +52,7 @@ for K = 1 : length(path)
         for J = 1 : 16
             imgO = imgO + hsv2rgb(hsv(:,:,:,J));
         end
-            
+
         imgO = imgO./16;
         imgO = imadjust(imgO,stretchlim(imgO),[]);
         %imgO = imsharpen(imgO);
@@ -57,17 +60,18 @@ for K = 1 : length(path)
 
         %every matrix obtained this way is used as a channel in the RGB image
         %and is than saved in the new folder
-        
+
         nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
         imwrite(imgO,nome);
-        imshow(imgO);
+        %imshow(imgO);
 
-        
-%         for J = 1 : 16
-%             img = ((readimage(imB,I-J)));
-%             montage({imgO,img})
-%         end
+
+        %         for J = 1 : 16
+        %             img = ((readimage(imB,I-J)));
+        %             montage({imgO,img})
+        %         end
         %pause(2);
 
+        %disp(imB.Files(I));
     end
 end

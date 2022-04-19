@@ -35,7 +35,7 @@ for K = 1 : length(path)
         %each pixel in a 3D matrix
 
         for J = 1 : 16
-            img = im2double((readimage(imB,I)));
+            img = im2double(adapthisteq(readimage(imB,I)));
             hsv(:,:,:,J) = (cat(3,zeros(imgR,imgC),ones(imgR,imgC),img));
             hsv(:,:,1,J) = hsv(:,:,1,J) + (16/255*(J-1));
             I = I + 1;
@@ -51,8 +51,9 @@ for K = 1 : length(path)
         end
             
         imgO = imgO./16;
-        %imgO = imadjust(imgO,stretchlim(imgO),[]);
-        imgO = imsharpen(imgO);
+        imgO = imadjust(imgO,stretchlim(imgO),[]);
+        %imgO = imsharpen(imgO);
+        %imgO = (imgO);
 
         %every matrix obtained this way is used as a channel in the RGB image
         %and is than saved in the new folder

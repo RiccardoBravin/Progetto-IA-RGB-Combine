@@ -8,8 +8,8 @@
 
 clear
 
-%path = {'G. Bulloides','G. Ruber','G. Sacculifer','N. Dutertrei','N. Incompta','N. Pachyderma','Others'};
-path = {'Others'};
+path = {'G. Bulloides','G. Ruber','G. Sacculifer','N. Dutertrei','N. Incompta','N. Pachyderma','Others'};
+%path = {'G. Bulloides'};
 outF = 'hsvIMG';
 
 %create output folder
@@ -35,7 +35,7 @@ for K = 1 : length(path)
         %this loop goes through 16 images at a time and stores the value of
         %each pixel in a 3D matrix
 
-        for J = 1 : 16
+        for J = [1,10,11,12,13,14,15,16,2,3,4,5,6,7,8,9]
             img = im2double(adapthisteq(readimage(imB,I)));
             %imshow(img);
 
@@ -45,18 +45,17 @@ for K = 1 : length(path)
         end
 
 
-        imgO = zeros(imgR,imgC,3);
+        imgO = ones(imgR,imgC,3);
 
         %this loop processes 10th, 50th and 90th percentile of each group
         %of 16 pixel gathered in the previous step
         for J = 1 : 16
-            imgO = imgO + hsv2rgb(hsv(:,:,:,J));
+            aux = hsv2rgb(hsv(:,:,:,J));
+            imgO = imgO + aux;
         end
 
         imgO = imgO./16;
         imgO = imadjust(imgO,stretchlim(imgO),[]);
-        %imgO = imsharpen(imgO);
-        %imgO = (imgO);
 
         %every matrix obtained this way is used as a channel in the RGB image
         %and is than saved in the new folder
@@ -66,11 +65,11 @@ for K = 1 : length(path)
         %imshow(imgO);
 
 
-        %         for J = 1 : 16
-        %             img = ((readimage(imB,I-J)));
-        %             montage({imgO,img})
-        %         end
-        %pause(2);
+%         for J = 1 : 16
+%             img = ((readimage(imB,I-J)));
+%             montage({imgO,img})
+%         end
+%         pause(2);
 
         %disp(imB.Files(I));
     end

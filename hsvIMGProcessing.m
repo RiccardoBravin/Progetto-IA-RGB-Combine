@@ -8,8 +8,8 @@
 
 clear
 
-path = {'G. Bulloides','G. Ruber','G. Sacculifer','N. Dutertrei','N. Incompta','N. Pachyderma','Others'};
-%path = {'G. Bulloides'};
+path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pachyderma','Others'};
+%path = {'G_Bulloides'};
 outF = 'hsvIMG';
 
 %create output folder

@@ -6,7 +6,7 @@
 %        |->   .
 %        |-> NCSU-CUB_Foram_Images_Others    
 
-path = {'G. Bulloides','G. Ruber','G. Sacculifer','N. Dutertrei','N. Incompta','N. Pachyderma','Others'};
+path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pachyderma','Others'};
 outF = 'percentileIMG';
 
 %create output folder
@@ -33,11 +33,7 @@ for K = 1 : length(path)
         %each pixel in a 3D matrix 
         for J = 1 : 16
             img = readimage(imB,I);
-            for R = 1 : imgR
-               for C = 1 : imgC
-                   px(R,C,J) = img(R,C);
-               end
-            end
+            px(:,:,J) = img;
             I = I + 1;
         end
 
@@ -56,6 +52,7 @@ for K = 1 : length(path)
                 img10(R,C) = pix(2);
             end
         end
+        
         %since we still have greyscale images we need to use uint8 format
         %for pixels values
         img90 = uint8(img90);

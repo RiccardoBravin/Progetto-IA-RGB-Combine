@@ -36,10 +36,12 @@ for K = 1 : length(path)
         %each pixel in a 3D matrix
 
         for J = [1,10,11,12,13,14,15,16,2,3,4,5,6,7,8,9]
-            img = im2double(adapthisteq(readimage(imB,I)));
+            
+            %img = im2double(adapthisteq(readimage(imB,I)));
+            img = im2double(readimage(imB,I));
             %imshow(img);
 
-            hsv(:,:,:,J) = (cat(3,zeros(imgR,imgC),ones(imgR,imgC),img));
+            hsv(:,:,:,J) = (cat(3,zeros(imgR,imgC),img,img));
             hsv(:,:,1,J) = hsv(:,:,1,J) + (16/255*(J-1));
             I = I + 1;
         end
@@ -51,10 +53,10 @@ for K = 1 : length(path)
         %of 16 pixel gathered in the previous step
         for J = 1 : 16
             aux = hsv2rgb(hsv(:,:,:,J));
-            imgO = imgO + aux;
+            imgO = imgO + aux.^2;
         end
 
-        imgO = imgO./16;
+        imgO = sqrt(imgO./16);
         imgO = imadjust(imgO,stretchlim(imgO),[]);
 
         %every matrix obtained this way is used as a channel in the RGB image
@@ -65,9 +67,9 @@ for K = 1 : length(path)
         %imshow(imgO);
 
 
-%         for J = 1 : 16
+%         for J = [16 7 6 5 4 3 2 1 15 14 13 12 11 10 9 8]
 %             img = ((readimage(imB,I-J)));
-%             montage({imgO,img})
+%             montage({imgO,img,imgO(:,:,1),imgO(:,:,2),imgO(:,:,3)})
 %         end
 %         pause(2);
 

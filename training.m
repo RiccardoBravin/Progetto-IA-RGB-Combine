@@ -4,7 +4,7 @@ warning off
 
 %###########network and data initialization###############
 
-pathP = 'hsvIMG';%here you have to save the 3-channels images, not the original images
+pathP = 'yuvIMG';%here you have to save the 3-channels images, not the original images
 
 imP = imageDatastore(pathP, ...
                      'IncludeSubfolders', true, ...
@@ -19,6 +19,11 @@ numClasses = numel(categories(imdsTrain.Labels)); %number of classes in the trai
 net = alexnet;  %load AlexNet
 siz=[227 227];
 
+%############resizing images############
+
+YTest = imdsTest.Labels; %save test set labels
+imdsTest = augmentedImageDatastore(siz,imdsTest);    
+imdsTrain = augmentedImageDatastore(siz,imdsTrain);
 
 %###########tuning rete############
 
@@ -32,7 +37,9 @@ options = trainingOptions(metodoOptim,...
     'InitialLearnRate',learningRate,...
     'ExecutionEnvironment','gpu',...
     'Verbose',false,...
-    'Plots','training-progress');
+    'Plots','training-progress', ...
+    'ValidationData',imdsTest, ...
+    'OutputNetwork','best-validation-loss');
 numIterationsPerEpoch = floor(numTr/miniBatchSize);
 
 
@@ -42,13 +49,6 @@ layers = [
         fullyConnectedLayer(numClasses,'WeightLearnRateFactor',20,'BiasLearnRateFactor',20)
         softmaxLayer
         classificationLayer];
-    
-    
-%############resizing images############
-
-YTest = imdsTest.Labels; %save test set labels
-imdsTest = augmentedImageDatastore(siz,imdsTest);    
-imdsTrain = augmentedImageDatastore(siz,imdsTrain);
 
 
 %############training############

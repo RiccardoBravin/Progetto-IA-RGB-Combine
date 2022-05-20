@@ -26,24 +26,11 @@ for K = 1 : length(path)
         %this loop goes through 16 images at a time and stores the value of
         %each pixel in a 3D matrix
         
-        auxI = readimage(imB,i);
-        BW = imbinarize(auxI,0.2);
-        BW = bwareaopen(BW,8000); 
-        BW = imdilate(BW, strel('disk', 30));
-        props = regionprops(BW, 'BoundingBox');
-        bounds = props.BoundingBox;
-%         bounds(1) = bounds(1)-20;
-%         bounds(2) = bounds(2)-50;
-%         bounds(3) = bounds(3)+50;
-%         bounds(4) = bounds(4)+50;
 
         %imshow(BW); pause(1)
 
 
         for j = [1,10,11,12,13,14,15,16,2,3,4,5,6,7,8,9]
-            
-            
-            auxI = imcrop(readimage(imB,i), bounds);
             
             %imshow(auxI)
                 
@@ -53,7 +40,7 @@ for K = 1 : length(path)
         end
         
         data_L(n) = K;
-        n = n+1;
+        n = n + 1;
 
     end
 end
@@ -74,10 +61,9 @@ test_L = categorical(DATA{2}(testInd));
 
 %###########tuning rete############
 
-net = alexnet;  %load AlexNet
 
 miniBatchSize = 30;
-learningRate = 2e-4;
+learningRate = 1e-4;
 metodoOptim='sgdm';
 options = trainingOptions(metodoOptim,...
     'MiniBatchSize',miniBatchSize,...
@@ -85,37 +71,36 @@ options = trainingOptions(metodoOptim,...
     'InitialLearnRate',learningRate,...
     'ExecutionEnvironment','gpu',...
     'Verbose',false,...
-    'Plots','training-progress', ...
-    'Shuffle','every-epoch',...
+    'Plots','training-progress',...
     'ValidationData',{test_I,test_L},...
     'OutputNetwork', 'best-validation-loss'...
     );
 
 
-layersTransfer = net.Layers(2:end-3);
 
-for i = 1:size(layersTransfer,1)
-    try
-    layersTransfer(i).WeightLearnRateFactor = 1;
-    catch
-    end
-end
-
-layers = [
-        imageInputLayer([227 227 16],"Name","imageinput")
-        convolution2dLayer([1 1],8,"Name","inconv","Padding","same")
-        convolution2dLayer([7 7],3,"Name","inconv","Padding","same")
-        layersTransfer
-        fullyConnectedLayer(numClasses,'WeightLearnRateFactor',20,'BiasLearnRateFactor',20)
-        softmaxLayer
-        classificationLayer
-];
+lgraph = layerGraph(resnet18); %Scelta del network da utilizzare
+lgraph = removeLayers(lgraph, {'ClassificationLayer_predictions','prob','fc1000','data'});
+newLayers = [
+    fullyConnectedLayer(numClasses,'Name','fc','WeightLearnRateFactor',20,'BiasLearnRateFactor', 20)
+    softmaxLayer('Name','softmax')
+    classificationLayer('Name','classoutput')];
+lgraph = addLayers(lgraph,newLayers);
+lgraph = connectLayers(lgraph,'pool5','fc');
 
 
+newLayers = [
+    imageInputLayer([227 227 16],"Name","Big2data")
+    convolution2dLayer([1 1],32,"Name","addConv1","Padding","same",'WeightsInitializer','he')
+    %batchNormalizationLayer("Name","bn_conv1_2")
+    %reluLayer("Name","conv1_relu_2")
+    convolution2dLayer([7 7],3,"Name","addConv2","Padding","same",'WeightsInitializer','he')
+    ];
+lgraph = addLayers(lgraph,newLayers);
+lgraph = connectLayers(lgraph,'addConv2','conv1');
 
 %############training############
 
-netTransfer = trainNetwork(train_I, train_L, layers,options);
+netTransfer = trainNetwork(train_I, train_L, lgraph, options);
 
 %############test#############
 
@@ -127,10 +112,10 @@ disp(accuracy)
 confusionchart(test_L,YPred)
 
 
-%% Visualize convolution
+%% Visualize first layer convolution
 
 img = train_I(:,:,:,1);
-weights = netTransfer.Layers(2,1).Weights;
+weights = netTransfer.Layers(end,1).Weights;
 O(:,:,1) = (convn(img, weights(:,:,:,1),'valid'));
 O(:,:,2) = (convn(img, weights(:,:,:,2),'valid'));
 O(:,:,3) = (convn(img, weights(:,:,:,3),'valid'));

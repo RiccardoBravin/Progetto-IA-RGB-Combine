@@ -1,10 +1,15 @@
 
 ProgettoIA_2021_2022.pdf
-Dataset/
-percentileIMG/
-normIMG/
-hsvIMG/
-hsv2IMG/
-ipcIMG/
-yuvIMG/
+Processing/Dataset
+Processing/percentileIMG
+Processing/normIMG
+Processing/hsvIMG
+Processing/hsv2IMG
+Processing/hsv3IMG
+Processing/ipcIMG
+Processing/yuvIMG
+Processing/PCAIMG
+Processing/MDSIMG
+/PCAIMG
 *.mat
+Processing/ipcIMG

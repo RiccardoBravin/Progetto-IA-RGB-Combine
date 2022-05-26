@@ -3,9 +3,6 @@ warning off
 
 
 %###########network and data initialization###############
-
-img_sz=[227 227];
-
 %{
 path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pachyderma','Others'};
 
@@ -58,53 +55,46 @@ for K = 1 : length(path)
     end
 end
 %}
+
 load("Dataset.mat", "DATA");
+im_sz=[227 227];
+numClasses = max(DATA{2}); %number of classes in the training set
 
 [trainInd,testInd] = dividerand(size(DATA{1},4),0.83,0.17,0);
 
-numClasses = max(DATA{2}); %number of classes in the training set
+all_lbls = categorical(DATA{2});
+all_imgs = DATA{1};
+k_fold = cvpartition(all_lbls, 'kfold',4);
 
-train_I = DATA{1}(:,:,:,trainInd);
-train_L = categorical(DATA{2}(trainInd));
-
-test_I = DATA{1}(:,:,:,testInd);
-test_L = categorical(DATA{2}(testInd));
-
-
-
-%###########tuning rete############
+%% Tuning network
 
 net = alexnet;  %load AlexNet
 
-miniBatchSize = 30;
-learningRate = 2e-4;
-metodoOptim='sgdm';
+metodoOptim='adam';
+learningRate = 1e-5;
+batch_size = 30;
+
 options = trainingOptions(metodoOptim,...
-    'MiniBatchSize',miniBatchSize,...
-    'MaxEpochs',30,...
+    'MiniBatchSize',batch_size,...
+    'MaxEpochs',20,...
     'InitialLearnRate',learningRate,...
     'ExecutionEnvironment','gpu',...
     'Verbose',false,...
-    'Plots','training-progress', ...
-    'Shuffle','every-epoch',...
-    'ValidationData',{test_I,test_L},...
-    'OutputNetwork', 'best-validation-loss'...
-    );
+    'Plots','training-progress');
 
 
 layersTransfer = net.Layers(2:end-3);
 
-for i = 1:size(layersTransfer,1)
-    try
-    layersTransfer(i).WeightLearnRateFactor = 1;
-    catch
-    end
-end
+% for i = 1:size(layersTransfer,1)
+%     try
+%     layersTransfer(i).WeightLearnRateFactor = .1;
+%     catch
+%     end
+% end
 
 layers = [
         imageInputLayer([227 227 16],"Name","imageinput")
-        convolution2dLayer([1 1],8,"Name","inconv","Padding","same")
-        convolution2dLayer([7 7],3,"Name","inconv","Padding","same")
+        convolution2dLayer([7 7],3,"Name","inconv1","Padding","same")
         layersTransfer
         fullyConnectedLayer(numClasses,'WeightLearnRateFactor',20,'BiasLearnRateFactor',20)
         softmaxLayer
@@ -113,27 +103,42 @@ layers = [
 
 
 
-%############training############
+%% k-fold training
 
-netTransfer = trainNetwork(train_I, train_L, layers,options);
+for i = 1:4
+    
+    %get the fold training and test selection masks
+    train_mask = training(k_fold, i);
+    test_mask = test(k_fold,i);
+    
+    %select fold of images
+    I_train = all_imgs(:,:,:,train_mask);
+    I_test = all_imgs(:,:,:,test_mask);
+    
+    %select relative labels
+    L_train = all_lbls(train_mask);
+    L_test = all_lbls(test_mask);
 
-%############test#############
+    %train network
+    netTransfer = trainNetwork(I_train,L_train,layers,options);
+    
+    %test accuracy
+    [YPred,scores] = classify(netTransfer,I_test);
+    
+    results{i,1} = mean(YPred == L_test');
+    results{i,2} = scores;
+    results{i,3} = test_mask;
+    disp(results);
+    
+end
 
-[YPred,scores] = classify(netTransfer,test_I);
-
-%############data############
-accuracy = sum(YPred' == test_L)/size(test_L,2);
-disp(accuracy)
-confusionchart(test_L,YPred)
+save(strcat("conv","_results.mat"),"results");
 
 
-%% Visualize convolution
-
-img = train_I(:,:,:,1);
-weights = netTransfer.Layers(2,1).Weights;
-O(:,:,1) = (convn(img, weights(:,:,:,1),'valid'));
-O(:,:,2) = (convn(img, weights(:,:,:,2),'valid'));
-O(:,:,3) = (convn(img, weights(:,:,:,3),'valid'));
-O = normalize(O);
-%imagesc(O);
-montage({O(:,:,1),O(:,:,2),O(:,:,3),O})
+% %% Visualize convolution
+% 
+% img = train_I(:,:,:,1);
+% O = activations(netTransfer,img,'inconv2');
+% O = rescale(O);
+% %imagesc(O);
+% montage({O(:,:,1),O(:,:,2),O(:,:,3),O})

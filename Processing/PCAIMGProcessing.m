@@ -1,15 +1,13 @@
 %###names of input and output folders###
-clear all
-warning off
 
-path = {'NCSU-CUB_Foram_Images_G-bulloides','NCSU-CUB_Foram_Images_G-ruber','NCSU-CUB_Foram_Images_G-sacculifer','NCSU-CUB_Foram_Images_N-dutertrei','NCSU-CUB_Foram_Images_N-incompta','NCSU-CUB_Foram_Images_N-pachyderma','NCSU-CUB_Foram_Images_Others'};
-outF = 'MDSIMG';
+path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pachyderma','Others'};
+outF = 'PCAIMG';
 
 %create output folder
 mkdir(outF);
 %start of main loop, goes through all folders of the dataset 
 
-for K = 1 : length(path)
+parfor K = 1 : length(path)
 
     %create datastore of the selected folder
     imB = imageDatastore(strcat('Dataset/',path{K}), ...
@@ -37,18 +35,19 @@ for K = 1 : length(path)
             I = I + 1;
         end
               
-        %reshape matrix in order to make it compatible with the MDS toolbox 
+        %reshape matrix in order to make it compatible with the PCA toolbox 
         %function 
         px = reshape(px,imgR*imgC,16);
-        %compute MDS, this treats every group of 16 pixels as an
+        %compute PCA, this treats every group of 16 pixels as an
         %entry, reducing the dimensionaly to 3
-        [px,pxm] = compute_mapping(px,'MDS',3);
+        [px,pxm] = compute_mapping(px,'PCA',3);
         %restructure the mapped matrix, use the 3 values of each pixel  
-        %obtained using the MDS methodas as RGB values
+        %obtained using the pca methodas as RGB values
         imgO = reshape(px,imgR,imgC,3);
         imgO = uint8(imgO);
         %save image
         nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
         imwrite(imgO,nome);
+        
     end
 end    

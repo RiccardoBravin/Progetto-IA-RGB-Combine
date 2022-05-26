@@ -63,8 +63,8 @@ test_L = categorical(DATA{2}(testInd));
 
 
 miniBatchSize = 30;
-learningRate = 1e-4;
-metodoOptim='sgdm';
+learningRate = 1e-5;
+metodoOptim='adam';
 options = trainingOptions(metodoOptim,...
     'MiniBatchSize',miniBatchSize,...
     'MaxEpochs',30,...
@@ -90,10 +90,10 @@ lgraph = connectLayers(lgraph,'pool5','fc');
 
 newLayers = [
     imageInputLayer([227 227 16],"Name","Big2data")
-    convolution2dLayer([1 1],32,"Name","addConv1","Padding","same",'WeightsInitializer','he')
+    %convolution2dLayer([3 3],8,"Name","addConv1","Padding","same",'WeightsInitializer','he')
     %batchNormalizationLayer("Name","bn_conv1_2")
-    %reluLayer("Name","conv1_relu_2")
-    convolution2dLayer([7 7],3,"Name","addConv2","Padding","same",'WeightsInitializer','he')
+    convolution2dLayer([5 5],3,"Name","addConv2","Padding","same",'WeightsInitializer','he')
+    reluLayer("Name","conv1_relu_2")
     ];
 lgraph = addLayers(lgraph,newLayers);
 lgraph = connectLayers(lgraph,'addConv2','conv1');
@@ -115,10 +115,7 @@ confusionchart(test_L,YPred)
 %% Visualize first layer convolution
 
 img = train_I(:,:,:,1);
-weights = netTransfer.Layers(end,1).Weights;
-O(:,:,1) = (convn(img, weights(:,:,:,1),'valid'));
-O(:,:,2) = (convn(img, weights(:,:,:,2),'valid'));
-O(:,:,3) = (convn(img, weights(:,:,:,3),'valid'));
-O = normalize(O);
+O = activations(netTransfer,img,'addConv2');
+O = rescale(O);
 %imagesc(O);
 montage({O(:,:,1),O(:,:,2),O(:,:,3),O})

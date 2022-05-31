@@ -32,19 +32,19 @@ for K = 1 : length(path)
         [imgR, imgC] = size(readimage(imB,I));
         hsv = zeros(imgR,imgC,3);
         imgO = zeros(imgR,imgC,3); %%ones o zeros??
+        tosee = zeros(imgR,imgC, 16);
 
         %this loop goes through 16 images at a time and stores the value of
         %each pixel in a 3D matrix
-
-        O = [1 10 11 12 13 14 15 16 2 3 4 5 6 7 8 9];
-        O = mod(O + randi(15),16) + 1;
-        
-        for J = 1:16
+        IND = circshift(1:16,randi([0,15]));
+        for J = [1,10,11,12,13,14,15,16,2,3,4,5,6,7,8,9]
             
-            img = im2double(readimage(imB,I));
+            img = im2double(readimage(imB,IND(mod(I,16)+1)));
+            tosee(:,:,J) = img;
             % imshow(img);pause(0.3);
             
-            hsv(:,:,1) = (16/255*(O(J)-1));
+            %hsv(:,:,:) = (cat(3,zeros(imgR,imgC),ones(imgR,imgC),img));
+            hsv(:,:,1) = (16/255*(J-1));
             hsv(:,:,2) = ones(imgR,imgC);
             hsv(:,:,3) = img;
             
@@ -53,8 +53,9 @@ for K = 1 : length(path)
             I = I + 1;
         end
         
-        imgO = rescale(imgO);
-        imgO = imreducehaze(imgO,0.7);
+        imgO = sqrt(imgO./16);
+        %imgO = imlocalbrighten(imgO,0.3);
+        imgO = imreducehaze(imgO,0.5);
         imgO = imsharpen(imgO);
         
 
@@ -66,11 +67,11 @@ for K = 1 : length(path)
         
         
         %imshow(imgO); pause(1);
-        montage({imgO,imgO(:,:,1),imgO(:,:,2),imgO(:,:,3)})
+        %montage({imgO,imgO(:,:,1),imgO(:,:,2),imgO(:,:,3)})
         
-%         for i = 1:16
-%             montage({tosee(:,:,i), imgO} ); pause(0.1);
-%         end
+        for i = 1:16
+            imshow(tosee(:,:,i)); pause(0.3);
+        end
         %disp(imB.Files(I-16));
     end
 end

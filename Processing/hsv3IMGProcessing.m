@@ -54,8 +54,10 @@ parfor K = 1 : length(path)
         end
         
         imgO = rescale(imgO);
-        imgO = imreducehaze(imgO,0.7);
-        imgO = imsharpen(imgO);
+        imgO = imlocalbrighten(imgO,0.3);
+        %imgO = imadjust(imgO, stretchlim(imgO),[]);
+        %imgO = imreducehaze(imgO,0.7);
+        %imgO = imsharpen(imgO);
         
 
         %every matrix obtained this way is used as a channel in the RGB image

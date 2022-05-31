@@ -15,7 +15,7 @@ outF = 'hsv4IMG';
 mkdir(outF);
 %start of main loop, goes through all folders of the dataset
 
-for K = 1 : length(path)
+parfor K = 1 : length(path)
 
     %create datastore of the selected folder
     imB = imageDatastore(strcat('Dataset/',path{K}), ...
@@ -31,7 +31,7 @@ for K = 1 : length(path)
 
         [imgR, imgC] = size(readimage(imB,I));
         hsv = zeros(imgR,imgC,3);
-        imgO = zeros(imgR,imgC,3); %%ones o zeros??
+        imgO = zeros(imgR,imgC,3);
 
         %this loop goes through 16 images at a time and stores the value of
         %each pixel in a 3D matrix
@@ -66,7 +66,7 @@ for K = 1 : length(path)
         
         
         %imshow(imgO); pause(1);
-        montage({imgO,imgO(:,:,1),imgO(:,:,2),imgO(:,:,3)})
+        %montage({imgO,imgO(:,:,1),imgO(:,:,2),imgO(:,:,3)})
         
 %         for i = 1:16
 %             montage({tosee(:,:,i), imgO} ); pause(0.1);

@@ -1,5 +1,5 @@
 clear
-clc
+
 groupingBy = 1;
 pw = 2;
 
@@ -36,7 +36,6 @@ parfor K = 1 : length(path)
         
         RGB = zeros(imgR,imgC,3);
 
-       
         for d = 1:16
             for ch = 1:3
                 for gc = 1:groupingBy
@@ -44,6 +43,7 @@ parfor K = 1 : length(path)
                 end
             end
         end
+
 
         RGB = uint8(rescale(RGB, 0, 255));
         

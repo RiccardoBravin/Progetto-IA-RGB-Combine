@@ -4,7 +4,7 @@ warning off
 
 %% Data gathering
 
-pathP = 'Processing/GroupBy1PostProcessed';%here you have to save the 3-channels images, not the original images
+pathP = 'Processing/hsv4IMG';%here you have to save the 3-channels images, not the original images
 im_sz=[227 227];
 
 imP = imageDatastore(pathP, ...
@@ -29,7 +29,7 @@ clearvars imP
 net = alexnet;
 
 metodoOptim='adam';
-learningRate = 1e-5;
+learningRate = 4e-5;
 batch_size = 30;
 
 options = trainingOptions(metodoOptim,...

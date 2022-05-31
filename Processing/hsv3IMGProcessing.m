@@ -9,7 +9,7 @@
 clear
 
 path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pachyderma','Others'};
-outF = 'hsv4IMG';
+outF = 'hsv3IMG';
 
 %create output folder
 mkdir(outF);
@@ -54,9 +54,9 @@ parfor K = 1 : length(path)
         end
         
         imgO = rescale(imgO);
-        imgO = imlocalbrighten(imgO,0.3);
+        imgO = imlocalbrighten(imgO,0.2);
         %imgO = imadjust(imgO, stretchlim(imgO),[]);
-        %imgO = imreducehaze(imgO,0.7);
+        imgO = imreducehaze(imgO,0.3);
         %imgO = imsharpen(imgO);
         
 

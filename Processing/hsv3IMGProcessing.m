@@ -9,13 +9,13 @@
 clear
 
 path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pachyderma','Others'};
-outF = 'hsv3IMG';
+outF = 'hsvdecIMG';
 
 %create output folder
 mkdir(outF);
 
 %start of main loop, goes through all folders of the dataset 
-parfor K = 1 : length(path)
+for K = 1 : length(path)
 
     %create datastore of the selected folder
     imB = imageDatastore(strcat('Dataset/',path{K}), ...
@@ -44,7 +44,7 @@ parfor K = 1 : length(path)
             img = im2double(readimage(imB,I));
 
             hsv(:,:,1) = (16/255*(O(J)-1));
-            hsv(:,:,2) = ones(imgR,imgC);
+            hsv(:,:,2) = img;
             hsv(:,:,3) = img;
             
             imgO = imgO + hsv2rgb(hsv).^2;
@@ -52,9 +52,10 @@ parfor K = 1 : length(path)
         end
         
         imgO = rescale(imgO);
-        imgO = imlocalbrighten(imgO,0.2);
-        imgO = imreducehaze(imgO,0.3);
-
+        
+        %imgO = imlocalbrighten(imgO,0.2);
+        imgO = rescale(decorrstretch(imgO));
+        imgO = imreducehaze(imgO,1);
         
 
         %every matrix obtained this way is used as a channel in the RGB image

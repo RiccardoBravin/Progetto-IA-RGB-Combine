@@ -53,8 +53,8 @@ for K = 1 : length(path)
 
 
         RGB2 = RGB;
-        RGB2 = imlocalbrighten(RGB2, 0.5, 'AlphaBlend',true);
-        RGB2 = imreducehaze(RGB2,0.9,'method','approxdcp');
+        RGB2 = imlocalbrighten(RGB2, 0.2, 'AlphaBlend',true);
+        RGB2 = imreducehaze(RGB2,0.6,'method','approxdcp');
 
 
         %         nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');

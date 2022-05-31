@@ -4,7 +4,7 @@ warning off
 
 %% Data gathering
 
-pathP = 'Processing/hsv3IMG';%here you have to save the 3-channels images, not the original images
+pathP = 'Processing/Groupby1IMG';%here you have to save the 3-channels images, not the original images
 im_sz=[227 227];
 
 imP = imageDatastore(pathP, ...

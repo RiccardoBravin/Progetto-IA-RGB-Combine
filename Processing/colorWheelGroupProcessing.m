@@ -1,6 +1,6 @@
 clear
 
-groupingBy = 1;
+groupingBy = 5;
 pw = 2;
 
 path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pachyderma','Others'};
@@ -10,7 +10,7 @@ outFPP = strcat(outF, "PostProcessed");
 mkdir(outF);
 mkdir(outFPP);
 
-parfor K = 1 : length(path)
+for K = 1 : length(path)
 
     imB = imageDatastore(strcat('Dataset/',path{K}), ...
         'IncludeSubfolders', true, ...
@@ -33,34 +33,38 @@ parfor K = 1 : length(path)
             px(:,:,O(J)) = img;
             I = I + 1;
         end
-        
+
         RGB = zeros(imgR,imgC,3);
 
-        for d = 1:16
-            for ch = 1:3
-                for gc = 1:groupingBy
-                    RGB(:,:,ch) = RGB(:,:,ch) + px(:,:,ch+gc).^pw;
+        d = 1;
+        while d <= 16
+            for chan = 1:3
+                for i = 1:groupingBy
+                    if(d <= 16)
+                        RGB(:,:,chan) = RGB(:,:,chan) + px(:,:,d).^pw;
+                        d = d + 1;
+                    end
                 end
             end
         end
 
 
         RGB = uint8(rescale(RGB, 0, 255));
-        
+
 
         RGB2 = RGB;
-        RGB2 = imlocalbrighten(RGB2, 0.5, 'AlphaBlend',true);
-        RGB2 = imreducehaze(RGB2,0.9,'method','approxdcp');
-        
-        
-        nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
-        imwrite(RGB,nome);
+        RGB2 = imlocalbrighten(RGB2, 0.2, 'AlphaBlend',true);
+        RGB2 = imreducehaze(RGB2,0.6,'method','approxdcp');
 
-        nome = strcat(outFPP,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
-        imwrite(RGB2,nome);
 
-%         montage({RGB,RGB(:,:,1),RGB(:,:,2),RGB(:,:,3)}); pause(1);
-%         montage({RGB2,RGB2(:,:,1),RGB2(:,:,2),RGB2(:,:,3)}); pause(1);
+        %         nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
+        %         imwrite(RGB,nome);
+        %
+        %         nome = strcat(outFPP,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
+        %         imwrite(RGB2,nome);
+
+        montage({RGB,RGB(:,:,1),RGB(:,:,2),RGB(:,:,3)}); pause(1);
+        montage({RGB2,RGB2(:,:,1),RGB2(:,:,2),RGB2(:,:,3)}); pause(1);
 
 
     end

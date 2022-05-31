@@ -9,30 +9,30 @@
 clear
 
 path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pachyderma','Others'};
-outF = 'hsv4IMG';
+outF = 'hsvdecIMG';
 
 %create output folder
 mkdir(outF);
-%start of main loop, goes through all folders of the dataset
 
-parfor K = 1 : length(path)
+%start of main loop, goes through all folders of the dataset 
+for K = 1 : length(path)
 
     %create datastore of the selected folder
     imB = imageDatastore(strcat('Dataset/',path{K}), ...
         'IncludeSubfolders', true, ...
         'LabelSource','foldernames');
 
-    %create new folder in the selected output folde that has the same name of the input folder
+    %create new folder in the selected output folder that has the same name of the input folder
     mkdir(outF,path{K});
 
-    %go through each image in the dataStore
+    %go through each image in the ImageDatastore
     I = 1;
     while I < length(imB.Labels)
 
         [imgR, imgC] = size(readimage(imB,I));
         hsv = zeros(imgR,imgC,3);
         imgO = zeros(imgR,imgC,3);
-
+        
         %this loop goes through 16 images at a time and stores the value of
         %each pixel in a 3D matrix
 
@@ -42,22 +42,20 @@ parfor K = 1 : length(path)
         for J = 1:16
             
             img = im2double(readimage(imB,I));
-            % imshow(img);pause(0.3);
-            
+
             hsv(:,:,1) = (16/255*(O(J)-1));
-            hsv(:,:,2) = ones(imgR,imgC);
+            hsv(:,:,2) = img;
             hsv(:,:,3) = img;
-            
             
             imgO = imgO + hsv2rgb(hsv).^2;
             I = I + 1;
         end
         
         imgO = rescale(imgO);
-        imgO = imlocalbrighten(imgO,0.3);
-        %imgO = imadjust(imgO, stretchlim(imgO),[]);
-        %imgO = imreducehaze(imgO,0.7);
-        %imgO = imsharpen(imgO);
+        
+        %imgO = imlocalbrighten(imgO,0.2);
+        imgO = rescale(decorrstretch(imgO));
+        imgO = imreducehaze(imgO,1);
         
 
         %every matrix obtained this way is used as a channel in the RGB image
@@ -65,7 +63,7 @@ parfor K = 1 : length(path)
 
         nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
         imwrite(imgO,nome);
-        
+      
         
         %imshow(imgO); pause(1);
         %montage({imgO,imgO(:,:,1),imgO(:,:,2),imgO(:,:,3)})

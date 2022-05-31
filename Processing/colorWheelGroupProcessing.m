@@ -1,6 +1,6 @@
 clear
 
-groupingBy = 5;
+groupingBy = 3;
 pw = 2;
 
 path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pachyderma','Others'};
@@ -54,7 +54,7 @@ for K = 1 : length(path)
 
         RGB2 = RGB;
         RGB2 = imlocalbrighten(RGB2, 0.2, 'AlphaBlend',true);
-        RGB2 = imreducehaze(RGB2,0.6,'method','approxdcp');
+        RGB2 = imreducehaze(RGB2,0.3,'method','approxdcp');
 
 
         %         nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');

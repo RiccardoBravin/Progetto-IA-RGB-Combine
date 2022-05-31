@@ -38,10 +38,14 @@ parfor K = 1 : length(path)
         for NO = 1 : augNum
             RGB = zeros(imgR,imgC,3);
     
-            for d = 1:16
-                for ch = 1:3
-                    for gc = 1:groupingBy
-                        RGB(:,:,ch) = RGB(:,:,ch) + px(:,:,ch+gc).^pw;
+            d = 1;
+            while d <= 16
+                for chan = 1:3
+                    for i = 1:groupingBy
+                        if(d <= 16)
+                            RGB(:,:,chan) = RGB(:,:,chan) + px(:,:,d).^pw;
+                            d = d + 1;
+                        end
                     end
                 end
             end

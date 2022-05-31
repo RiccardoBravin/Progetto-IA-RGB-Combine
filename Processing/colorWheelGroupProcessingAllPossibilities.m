@@ -1,15 +1,16 @@
 clear
 
 
-groupingBy = 1;
+groupingBy = 1
+;
 pw = 2;
 
 path = {'G. Bulloides','G. Ruber','G. Sacculifer','N. Dutertrei','N. Incompta','N. Pachyderma','Others'};
 outF = strcat('GroupBy', string(groupingBy), '_allPossibilities');
-outFPP = strcat(outF, "PostProcessed");
+% outFPP = strcat(outF, "PostProcessed");
 
 mkdir(outF);
-mkdir(outFPP);
+% mkdir(outFPP);
 
 parfor K = 1 : length(path)
 
@@ -18,7 +19,7 @@ parfor K = 1 : length(path)
         'LabelSource','foldernames');
 
     mkdir(outF,path{K});
-    mkdir(outFPP,path{K});
+%     mkdir(outFPP,path{K});
 
     I = 1;
     while I < 10*16
@@ -38,10 +39,14 @@ parfor K = 1 : length(path)
         for NO = 1 : 16
             RGB = zeros(imgR,imgC,3);
     
-            for d = 1:16
-                for ch = 1:3
-                    for gc = 1:groupingBy
-                        RGB(:,:,ch) = RGB(:,:,ch) + px(:,:,ch+gc).^pw;
+            d = 1;
+            while d <= 16
+                for chan = 1:3
+                    for i = 1:groupingBy
+                        if(d <= 16)
+                            RGB(:,:,chan) = RGB(:,:,chan) + px(:,:,d).^pw;
+                            d = d + 1;
+                        end
                     end
                 end
             end
@@ -50,16 +55,16 @@ parfor K = 1 : length(path)
             RGB = uint8(rescale(RGB, 0, 255));
             
     
-            RGB2 = RGB;
-            RGB2 = imlocalbrighten(RGB2, 0.5, 'AlphaBlend',true);
-            RGB2 = imreducehaze(RGB2,0.9,'method','approxdcp');
+%             RGB2 = RGB;
+%             RGB2 = imlocalbrighten(RGB2, 0.5, 'AlphaBlend',true);
+%             RGB2 = imreducehaze(RGB2,0.9,'method','approxdcp');
             
             
             nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'_', string(NO), '.png');
             imwrite(RGB,nome);
     
-            nome = strcat(outFPP,'/',path{K},'/',char(imB.Labels(I-1)),'_', string(NO),'.png');
-            imwrite(RGB2,nome);
+%             nome = strcat(outFPP,'/',path{K},'/',char(imB.Labels(I-1)),'_', string(NO),'.png');
+%             imwrite(RGB2,nome);
     %         montage({RGB,RGB(:,:,1),RGB(:,:,2),RGB(:,:,3)}); pause(1);
     %         montage({RGB2,RGB2(:,:,1),RGB2(:,:,2),RGB2(:,:,3)}); pause(1);
             px = circshift(px, 1, 3);

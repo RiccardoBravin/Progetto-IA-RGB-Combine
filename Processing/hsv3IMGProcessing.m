@@ -1,76 +1,61 @@
-%###names of input and output folders###
-%input folder in the format:
-%Dataset |-> NCSU-CUB_Foram_Images_G-bulloides
-%        |->   .
-%        |->   .
-%        |->   .
-%        |-> NCSU-CUB_Foram_Images_Others
-
 clear
 
+%Cartelle da cui leggere le diverse classi
 path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pachyderma','Others'};
-outF = 'hsvdecIMG';
-
-%create output folder
+%Creazione della cartella di output
+outF = 'hsvIMG';
 mkdir(outF);
 
-%start of main loop, goes through all folders of the dataset 
-for K = 1 : length(path)
+%ciclo parallelizzato su ogni cartella di "path"
+parfor K = 1 : length(path)
 
-    %create datastore of the selected folder
+    %Creazione dell'imageDatastore per la data cartella di path
     imB = imageDatastore(strcat('Dataset/',path{K}), ...
         'IncludeSubfolders', true, ...
         'LabelSource','foldernames');
-
-    %create new folder in the selected output folder that has the same name of the input folder
+    %Genera una cartella nella path specificata con lo stesso nome di quella di input
     mkdir(outF,path{K});
 
-    %go through each image in the ImageDatastore
+    %Per ogni immagine nella cartella 
     I = 1;
     while I < length(imB.Labels)
-
+        
+        %Lettura della dimensione della immagine
         [imgR, imgC] = size(readimage(imB,I));
+        %inizializzazione delle matrici a zero
         hsv = zeros(imgR,imgC,3);
         imgO = zeros(imgR,imgC,3);
-        
-        %this loop goes through 16 images at a time and stores the value of
-        %each pixel in a 3D matrix
 
-        O = [1 10 11 12 13 14 15 16 2 3 4 5 6 7 8 9];
-        O = mod(O + randi(15),16) + 1;
+        %Dichiarazione dell'ordine randomizzato di lettura delle immagini
+        %per la rimozione del bias di inizio
+        Ind = [1 10 11 12 13 14 15 16 2 3 4 5 6 7 8 9];
+        Ind = mod(Ind + randi(15),16) + 1;
         
-        for J = 1:16
-            
+        for J = Ind
+            %lettura dell'immagine corrente
             img = im2double(readimage(imB,I));
-
-            hsv(:,:,1) = (16/255*(O(J)-1));
-            hsv(:,:,2) = img;
-            hsv(:,:,3) = img;
             
-            imgO = imgO + hsv2rgb(hsv).^2;
+            %generazione dell'immagine in hsv
+            hsv(:,:,1) = (16/255*(J-1)); %hue calcolata in funzione della numerazione dell'immagine
+            hsv(:,:,2) = ones(imgR,imgC);   %saturation posta ad 1
+            hsv(:,:,3) = img;               %value
+            
+            %somma del quadrato dell'immagine
+            imgO = imgO + hsv2rgb(hsv).^2; 
             I = I + 1;
         end
         
+        %Riscala tra 0 e 1 per avere il full range di colori
         imgO = rescale(imgO);
-        
-        %imgO = imlocalbrighten(imgO,0.2);
-        imgO = rescale(decorrstretch(imgO));
-        imgO = imreducehaze(imgO,1);
-        
 
-        %every matrix obtained this way is used as a channel in the RGB image
-        %and is than saved in the new folder
-
+        %Post processing per aumentare la luminosità e accentuare i colori
+        imgO = imlocalbrighten(imgO,0.2);
+        imgO = imreducehaze(imgO,.5);
+        
+        %salvataggio dell'immagine ottenuta nella nuova path 
         nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
         imwrite(imgO,nome);
-      
-        
-        %imshow(imgO); pause(1);
-        %montage({imgO,imgO(:,:,1),imgO(:,:,2),imgO(:,:,3)})
-        
-%         for i = 1:16
-%             montage({tosee(:,:,i), imgO} ); pause(0.1);
-%         end
-        %disp(imB.Files(I-16));
+
+
     end
 end

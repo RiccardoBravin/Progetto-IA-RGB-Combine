@@ -11,7 +11,7 @@ path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pac
 %scelta e generazione delle due cartelle in cui salvare le immagini con e
 %senza post processing
 outF = strcat('GroupBy', string(groupingBy));
-outFPP = strcat(outF, "PostProcessed");
+outFPP = strcat(outF, "PP");
 mkdir(outF);
 mkdir(outFPP);
 
@@ -44,8 +44,7 @@ parfor K = 1 : length(path)
         
         %Lettura delle immagini e salvataggio nella struttura px
         for J = Ind
-            img = readimage(imB,I);
-            px(:,:,J) = img;
+            px(:,:,J) = readimage(imB,I);
             I = I + 1;
         end
 
@@ -68,7 +67,7 @@ parfor K = 1 : length(path)
         end
 
         %riscalo l'immagine nell'intervallo [0,1]
-        RGB = uint8(rescale(RGB));
+        RGB = rescale(RGB);
 
         %Post processing per aumentare la luminosità e accentuare i colori
         RGB2 = imlocalbrighten(RGB, 0.2, 'AlphaBlend',true);

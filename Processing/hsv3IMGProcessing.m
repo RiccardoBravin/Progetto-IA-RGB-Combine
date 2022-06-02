@@ -4,7 +4,9 @@ clear
 path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pachyderma','Others'};
 %Creazione della cartella di output
 outF = 'hsvIMG';
+outFPP= 'hsvPPIMG';
 mkdir(outF);
+mkdir(outFPP);
 
 %ciclo parallelizzato su ogni cartella di "path"
 parfor K = 1 : length(path)
@@ -15,6 +17,7 @@ parfor K = 1 : length(path)
         'LabelSource','foldernames');
     %Genera una cartella nella path specificata con lo stesso nome di quella di input
     mkdir(outF,path{K});
+    mkdir(outFPP,path{K});
 
     %Per ogni immagine nella cartella 
     I = 1;
@@ -47,13 +50,16 @@ parfor K = 1 : length(path)
         
         %Riscala tra 0 e 1 per avere il full range di colori
         imgO = rescale(imgO);
+        nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
+        imwrite(imgO,nome);
+        
 
         %Post processing per aumentare la luminosità e accentuare i colori
         imgO = imlocalbrighten(imgO,0.2);
         imgO = imreducehaze(imgO,.5);
         
         %salvataggio dell'immagine ottenuta nella nuova path 
-        nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
+        nome = strcat(outFPP,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
         imwrite(imgO,nome);
 
 

@@ -1,10 +1,18 @@
 clear
 
+%Scegliere se effettuare o meno la randomizzazione
+randomize = true;
+
 %Cartelle da cui leggere le diverse classi
 path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pachyderma','Others'};
-%Creazione della cartella di output
-outF = 'hsvIMG';
-outFPP= 'hsvPPIMG';
+
+%Creazione delle cartelle di output
+outF = 'HSV';
+outFPP= 'HSVPP';
+if(randomize)
+    outF = strcat(outF,"_NoRand");
+    outFPP = strcat(outFPP,"_NoRand");
+end
 mkdir(outF);
 mkdir(outFPP);
 
@@ -29,11 +37,13 @@ parfor K = 1 : length(path)
         hsv = zeros(imgR,imgC,3);
         imgO = zeros(imgR,imgC,3);
 
-        %Dichiarazione dell'ordine randomizzato di lettura delle immagini
-        %per la rimozione del bias di inizio
+        %Dichiarazione dell'ordine di processing per avere luci ordinate
         Ind = [1 10 11 12 13 14 15 16 2 3 4 5 6 7 8 9];
-        Ind = mod(Ind + randi(15),16) + 1;
-        
+        %Randomizzazione dell'ordine di lettura
+        if randomize
+            Ind = mod(Ind + randi(15),16) + 1; %Rimuovere per non effettuare la randomizzazione
+        end
+
         for J = Ind
             %lettura dell'immagine corrente
             img = im2double(readimage(imB,I));
@@ -50,6 +60,7 @@ parfor K = 1 : length(path)
         
         %Riscala tra 0 e 1 per avere il full range di colori
         imgO = rescale(imgO);
+        %salvataggio dell'immagine ottenuta nella nuova path 
         nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
         imwrite(imgO,nome);
         

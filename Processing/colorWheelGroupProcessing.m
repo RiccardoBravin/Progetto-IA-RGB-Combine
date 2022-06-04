@@ -1,5 +1,7 @@
 clear
 
+%Scegliere se effettuare o meno la randomizzazione
+randomize = true;
 %scelta del numero di immagini da raggruppare
 groupingBy = 3;
 %potenza a cui elevare per la somma di immagini
@@ -10,8 +12,12 @@ path = {'G_Bulloides','G_Ruber','G_Sacculifer','N_Dutertrei','N_Incompta','N_Pac
 
 %scelta e generazione delle due cartelle in cui salvare le immagini con e
 %senza post processing
-outF = strcat('GroupBy', string(groupingBy));
+outF = strcat('RGB', string(groupingBy));
 outFPP = strcat(outF, "PP");
+if(randomize)
+    outF = strcat(outF,"_NoRand");
+    outFPP = strcat(outFPP,"_NoRand");
+end
 mkdir(outF);
 mkdir(outFPP);
 
@@ -37,10 +43,12 @@ parfor K = 1 : length(path)
         px = zeros(imgR,imgC,16);
         RGB = zeros(imgR,imgC,3);
 
-        %Dichiarazione dell'ordine randomizzato di lettura delle immagini
-        %per la rimozione del bias di inizio
+        %Dichiarazione dell'ordine di processing per avere luci ordinate
         Ind = [1 10 11 12 13 14 15 16 2 3 4 5 6 7 8 9];
-        Ind = mod(Ind + randi(15),16) + 1;
+        %Randomizzazione dell'ordine di lettura
+        if randomize
+            Ind = mod(Ind + randi(15),16) + 1; %Rimuovere per non effettuare la randomizzazione
+        end
         
         %Lettura delle immagini e salvataggio nella struttura px
         for J = Ind
@@ -68,14 +76,13 @@ parfor K = 1 : length(path)
 
         %riscalo l'immagine nell'intervallo [0,1]
         RGB = rescale(RGB);
+        %salvataggio dell'immagine senza post processing nella nuova path 
+        nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
+        imwrite(RGB,nome);
 
         %Post processing per aumentare la luminosità e accentuare i colori
         RGB2 = imlocalbrighten(RGB, 0.2, 'AlphaBlend',true);
         RGB2 = imreducehaze(RGB2,0.3,'method','approxdcp');
-
-        %salvataggio dell'immagine senza post processing nella nuova path 
-        nome = strcat(outF,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
-        imwrite(RGB,nome);
         %salvataggio dell'immagine con post processing nella nuova path 
         nome = strcat(outFPP,'/',path{K},'/',char(imB.Labels(I-1)),'.png');
         imwrite(RGB2,nome);
